@@ -1,8 +1,6 @@
 from transformers import AutoTokenizer, AutoModel
 import torch
-from scipy.spatial.distance import cosine
 import fitz 
-
 
 
 def get_text(pdf_path):
@@ -29,7 +27,6 @@ def calculate_similarity(job_description, resume):
 
     jd_embedding = jd_embedding / jd_embedding.norm(dim=1, keepdim=True)
     resume_embedding = resume_embedding / resume_embedding.norm(dim=1, keepdim=True)
-    print(jd_embedding)
     similarity = torch.mm(jd_embedding, resume_embedding.T).item()
     return similarity
 
@@ -45,10 +42,6 @@ print(extracted_text)
 
 job_description = """
 Job Title: AI/ML Engineer - NLP and Backend Development
-
-Job Description:
-We are seeking an AI/ML Engineer skilled in NLP, machine learning, and backend development to design and implement advanced AI solutions.
-
 Responsibilities:
 
 Develop speech-to-text summarization systems using Whisper, PEGASUS, and BERT.
