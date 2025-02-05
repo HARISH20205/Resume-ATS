@@ -1,4 +1,3 @@
-import torch
+import django 
 
-
-print(torch.cuda.is_available())
+print(django.get_version())
