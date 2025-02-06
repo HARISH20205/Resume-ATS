@@ -5,6 +5,8 @@ from transformers import AutoTokenizer, AutoModel
 import torch
 import fitz
 
+from ats_score.utils import generate_ats_score
+
 # Load the model and tokenizer globally to avoid reloading them for every request
 model_name = "sentence-transformers/all-MiniLM-L6-v2"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -38,33 +40,32 @@ def calculate_similarity(job_description, resume_text):
 def process_resume(request):
     if request.method == 'POST':
         try:
-            # Parse JSON data from the request
             data = json.loads(request.body)
 
-            # Extract parameters with type checking
             user_name = data.get('user_name')
             user_id = data.get('user_id')
             resume = data.get('resume')
             job_description = data.get('job_description')
 
             similarity = calculate_similarity(job_description, resume)
-
+            ats_score = generate_ats_score(resume,job_description)
             response_data = {
                 'user_id': user_id,
                 'user_name': user_name,
-                'similarity': similarity
+                'similarity': similarity,
+                'ats_score':ats_score
             }
 
             return JsonResponse(response_data, status=200)
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
     elif request.method == 'GET':
-        return JsonResponse({'message': 'GET request received. The API is working!'}, status=200)
+        return JsonResponse({'message': 'yaay working '}, status=200)
     else:
         return JsonResponse({'error': 'Only POST and GET requests are allowed'}, status=405)
 
 def verify_api(request):
     if request.method == 'GET':
-        return JsonResponse({'message': 'GET request received. working!'}, status=200)
+        return JsonResponse({'message': 'yaay working '}, status=200)
     else:
         return JsonResponse({'error': 'Only GET requests are allowed'}, status=405)
