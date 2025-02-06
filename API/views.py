@@ -1,16 +1,70 @@
-from django.shortcuts import render
-from rest_framework import generics
-from .models import EndPoint
-from .serializers import EndPointSerializer
-# Create your views here.
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+from transformers import AutoTokenizer, AutoModel
+import torch
+import fitz
 
+# Load the model and tokenizer globally to avoid reloading them for every request
+model_name = "sentence-transformers/all-MiniLM-L6-v2"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModel.from_pretrained(model_name)
 
-class EndPointListCreate(generics.ListCreateAPIView):
-    queryset = EndPoint.objects.all()
-    serializer_class = EndPointSerializer
+def extract_text_from_pdf(file_path):
+    text = ""
+    doc = fitz.open(file_path)
+    for page_num in range(len(doc)):
+        page = doc.load_page(page_num)
+        text += page.get_text()
+    return text
 
+def get_embeddings(texts):
+    inputs = tokenizer(texts, padding=True, truncation=True, return_tensors="pt")
+    with torch.no_grad():
+        model_output = model(**inputs)
+    embeddings = model_output.last_hidden_state.mean(dim=1)
+    return embeddings
 
-class EndPointRetriveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
-    queryset = EndPoint.objects.all()
-    serializer_class = EndPointSerializer
-    lookup_field = 'pk'
+def calculate_similarity(job_description, resume_text):
+    jd_embedding = get_embeddings([job_description])
+    resume_embedding = get_embeddings([resume_text])
+
+    jd_embedding = jd_embedding / jd_embedding.norm(dim=1, keepdim=True)
+    resume_embedding = resume_embedding / resume_embedding.norm(dim=1, keepdim=True)
+    similarity = torch.mm(jd_embedding, resume_embedding.T).item()
+    return similarity
+
+@csrf_exempt
+def process_resume(request):
+    if request.method == 'POST':
+        try:
+            # Parse JSON data from the request
+            data = json.loads(request.body)
+
+            # Extract parameters with type checking
+            user_name = data.get('user_name')
+            user_id = data.get('user_id')
+            resume = data.get('resume')
+            job_description = data.get('job_description')
+
+            similarity = calculate_similarity(job_description, resume)
+
+            response_data = {
+                'user_id': user_id,
+                'user_name': user_name,
+                'similarity': similarity
+            }
+
+            return JsonResponse(response_data, status=200)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    elif request.method == 'GET':
+        return JsonResponse({'message': 'GET request received. The API is working!'}, status=200)
+    else:
+        return JsonResponse({'error': 'Only POST and GET requests are allowed'}, status=405)
+
+def verify_api(request):
+    if request.method == 'GET':
+        return JsonResponse({'message': 'GET request received. working!'}, status=200)
+    else:
+        return JsonResponse({'error': 'Only GET requests are allowed'}, status=405)
