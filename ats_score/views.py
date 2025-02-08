@@ -18,7 +18,6 @@ def score(request):
             job_description = data.get('job_description')
 
             score = generate_ats_score(resume,job_description)
-
             response_data = {
                 "score":score,
                 'user_name':user_name
