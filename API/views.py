@@ -4,8 +4,10 @@ import json
 from transformers import AutoTokenizer, AutoModel
 import torch
 import fitz
-from .ats_parser import extract_structured_data
+from .ats_parser import extract_structured_data,get_markdown
 from ats_score.utils import generate_ats_score
+from .response import get_response
+
 
 # Load the model and tokenizer globally to avoid reloading them for every request
 model_name = "sentence-transformers/all-MiniLM-L6-v2"
@@ -46,16 +48,20 @@ def process_resume(request):
             user_id = data.get('user_id')
             resume = data.get('resume')
             job_description = data.get('job_description')
-            print(user_name,user_id,resume,job_description)
+            # print(user_name,user_id,resume,job_description)
+
             similarity = calculate_similarity(job_description, resume)
-            ats_score = generate_ats_score(resume,job_description)
+            markdown_format = get_markdown(resume)
             st_data = extract_structured_data(resume)
+            ats_score = generate_ats_score(markdown_format,job_description)
+
             response_data = {
                 'user_id': user_id,
                 'user_name': user_name,
                 'similarity': similarity,
                 'ats_score':ats_score,
-                'structured_data': st_data
+                'structured_data': st_data,
+                'markdown_format': markdown_format
             }
 
             return JsonResponse(response_data, status=200)

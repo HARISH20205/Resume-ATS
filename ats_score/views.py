@@ -4,6 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from .utils import generate_ats_score
 
+from API.ats_parser import get_markdown
 # Create your views here.
 
 @csrf_exempt
@@ -16,11 +17,13 @@ def score(request):
             user_id = data.get('user_id')
             resume = data.get('resume')
             job_description = data.get('job_description')
-
+            
+            resume = get_markdown(resume)
             score = generate_ats_score(resume,job_description)
             response_data = {
                 "score":score,
-                'user_name':user_name
+                'user_name':user_name,
+                "resume":resume
             }
             return JsonResponse(response_data,status=200)
         except json.JSONDecodeError:

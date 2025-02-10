@@ -35,9 +35,9 @@ model_name = "sentence-transformers/all-MiniLM-L6-v2"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModel.from_pretrained(model_name)
 
-pdf_path = "Data/Resume.pdf"
-extracted_text = get_text(pdf_path)
-print(extracted_text)
+# pdf_path = "Data/Resume.pdf"
+# extracted_text = get_text(pdf_path)
+# print(extracted_text)
 
 
 job_description = """
