@@ -4,7 +4,7 @@ import json
 from transformers import AutoTokenizer, AutoModel
 import torch
 import fitz
-from .ats_parser import extract_structured_data,get_markdown
+from .ats_parser import extract_resume_details
 from ats_score.utils import generate_ats_score
 from .response import get_response
 
@@ -51,9 +51,8 @@ def process_resume(request):
             # print(user_name,user_id,resume,job_description)
 
             similarity = calculate_similarity(job_description, resume)
-            markdown_format = get_markdown(resume)
-            st_data = extract_structured_data(resume)
-            ats_score = generate_ats_score(markdown_format,job_description)
+            markdown_format,st_data = extract_resume_details(resume)
+            ats_score = generate_ats_score(st_data,job_description)
 
             response_data = {
                 'user_id': user_id,
@@ -74,6 +73,6 @@ def process_resume(request):
 
 def verify_api(request):
     if request.method == 'GET':
-        return JsonResponse({'message': 'yaay working '}, status=200)
+        return JsonResponse({'message': 'yaay working-GET '}, status=200)
     else:
         return JsonResponse({'error': 'Only GET requests are allowed'}, status=405)

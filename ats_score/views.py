@@ -4,7 +4,10 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from .utils import generate_ats_score
 
-from API.ats_parser import get_markdown
+from API.ats_parser import extract_resume_details
+
+
+
 # Create your views here.
 
 @csrf_exempt
@@ -18,7 +21,7 @@ def score(request):
             resume = data.get('resume')
             job_description = data.get('job_description')
             
-            resume = get_markdown(resume)
+            resume,_ = extract_resume_details(resume)
             score = generate_ats_score(resume,job_description)
             response_data = {
                 "score":score,

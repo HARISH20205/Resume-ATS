@@ -1,7 +1,7 @@
 import re
 from .response import get_response
 from pydantic import BaseModel, TypeAdapter
-
+import json
 class Section:
     name: str
     email: str
@@ -12,27 +12,32 @@ class Section:
     certifications: str
     areas_of_interest: str
 
-def extract_structured_data(resume: str):
-    system_ins = """Analyze the following resume and extract its contents into a structured format. Ensure that the extracted information is accurate and well-categorized under the following fields:
-                   {
-                    "name": None,
-                    "email": None,
-                    "phone": None,
-                    "skills": None,
-                    "experience": None,
-                    "education": None,
-                    "certifications": None,
-                    "areas of interest": None
-                }
+def extract_resume_details(resume: str):
+    system_ins = """Analyze the provided resume and perform the following tasks:
+    1. Extract its contents into a structured format under the fields:
+       {
+        "name": None,
+        "email": None,
+        "phone": None,
+        "skills": None,
+        "experience": None,
+        "education": None,
+        "certifications": None,
+        "areas of interest": None
+       }
+       Provide this output in JSON format under the key "structured_data". If a field is missing or cannot be determined, set its value to None.
 
-                Provide the output in the exact JSON format mentioned above. If a field is missing or cannot be determined, set its value to None."""
-    structured_data = get_response(prompt=resume,task=system_ins)
-    # Return structured data
-    return structured_data
+    2. Convert the resume into a well-structured and professional markdown format, ensuring proper use of headings, subheadings, bullet points, and consistent formatting for sections like education, experience, projects, skills, and certifications. Include the markdown content in a JSON field named "markdown", properly escaped to maintain JSON validity.
 
-def get_markdown(resume: str):
-    system_ins = """Analyze the provided resume and convert it into a well-structured and professional markdown format, ensuring proper use of headings, subheadings, bullet points, and consistent formatting for sections like education, experience, projects, skills, and certifications. Additionally, provide the output as a valid JSON string where the markdown content is enclosed within a JSON field named resume. Ensure the markdown content in the JSON is properly escaped (e.g., \n for newlines) to maintain JSON validity."""
-    markdown_format = get_response(prompt=resume,task=system_ins)
-    return markdown_format
+    Combine the outputs into the following JSON format:
+    {
+        "markdown": {markdown_content},
+        "structured_data": {structured_data}
+    }
+    """
+    combined_output = get_response(prompt=resume, task=system_ins)
+    result = json.loads(combined_output)
+    return result.get("markdown"), result.get("structured_data")
+
 # structured_output = extract_structured_data()
 # print(structured_output)
