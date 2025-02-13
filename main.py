@@ -35,9 +35,9 @@ model_name = "sentence-transformers/all-MiniLM-L6-v2"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModel.from_pretrained(model_name)
 
-pdf_path = "Data/Resume.pdf"
-extracted_text = get_text(pdf_path)
-print(extracted_text)
+# pdf_path = "Data/Resume.pdf"
+# extracted_text = get_text(pdf_path)
+# print(extracted_text)
 
 
 job_description = """
@@ -63,5 +63,5 @@ Experience with cloud and DevOps practices.
 Join us to build innovative AI systems and work on cutting-edge projects!
 """
 
-similarity_score = calculate_similarity(job_description, extracted_text)
-print(f"Cosine Similarity: {similarity_score:.4f}")
+# similarity_score = calculate_similarity(job_description, extracted_text)
+# print(f"Cosine Similarity: {similarity_score:.4f}")

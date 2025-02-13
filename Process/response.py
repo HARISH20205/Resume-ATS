@@ -18,7 +18,7 @@ def get_response(prompt,task):
             system_instruction=task+sys_instruct,response_mime_type='application/json',temperature=0.6),
         contents=prompt
     )
-    print(response.text)
+    # print(response.text)
     return response.text
 
-# get_response("What is AI?")
+# get_response("What is AI?","explain the given prompt")

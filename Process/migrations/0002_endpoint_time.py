@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('API', '0001_initial'),
+        ('Process', '0001_initial'),
     ]
 
     operations = [
