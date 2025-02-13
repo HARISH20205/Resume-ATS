@@ -1,17 +1,39 @@
 from transformers import AutoTokenizer, AutoModel
 import torch
-import fitz 
-
+import fitz
+import re
+import unicodedata
 
 def get_text(pdf_path):
+    def normalize_text(text):
+        # Replace common bullet point characters with hyphens
+        bullets = {"•", "▪", "◦", "‣", "⁃", "*", "-", "·", "―"}
+        text = "".join("-" if char in bullets else char for char in text)
+
+        # Replace non-ASCII characters with their closest equivalent or remove them
+        text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
+
+        # Normalize whitespace
+        text = re.sub(r"\s+", " ", text).strip()
+        return text
+    
     text = ""
     doc = fitz.open(pdf_path)
     
     for page_num in range(len(doc)):
-        page = doc.load_page(page_num) 
-        text += page.get_text() 
-    return text
-
+        page = doc.load_page(page_num)
+        page_text = page.get_text()
+        
+        # Normalize the text for each page
+        page_text = normalize_text(page_text)
+        
+        # Add page separator (optional)
+        if page_num > 0:
+            text += "\n\n"
+        
+        text += page_text
+    
+    return text.strip()
 
 
 def get_embeddings(texts, tokenizer, model):
@@ -63,5 +85,6 @@ Experience with cloud and DevOps practices.
 Join us to build innovative AI systems and work on cutting-edge projects!
 """
 
+print(get_text("Data/Resume.pdf"))
 # similarity_score = calculate_similarity(job_description, extracted_text)
 # print(f"Cosine Similarity: {similarity_score:.4f}")
