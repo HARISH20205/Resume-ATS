@@ -5,7 +5,7 @@ from transformers import AutoTokenizer, AutoModel
 import torch
 import fitz
 from .ats_parser import extract_resume_details
-from ats_score.utils import generate_ats_score
+from .utils import generate_ats_score
 from .response import get_response
 
 

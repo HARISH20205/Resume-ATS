@@ -63,5 +63,5 @@ Experience with cloud and DevOps practices.
 Join us to build innovative AI systems and work on cutting-edge projects!
 """
 
-similarity_score = calculate_similarity(job_description, extracted_text)
-print(f"Cosine Similarity: {similarity_score:.4f}")
+# similarity_score = calculate_similarity(job_description, extracted_text)
+# print(f"Cosine Similarity: {similarity_score:.4f}")

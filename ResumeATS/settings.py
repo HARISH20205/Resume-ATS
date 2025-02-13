@@ -40,8 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'API',
-    'ats_score'
+    'Process',
 ]
 
 MIDDLEWARE = [

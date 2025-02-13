@@ -18,6 +18,5 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('', include('API.urls')),
-    path('ats_score/', include('ats_score.urls')),
+    path('', include('Process.urls')),
 ]
