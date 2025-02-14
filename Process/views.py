@@ -4,10 +4,12 @@ import json
 from transformers import AutoTokenizer, AutoModel
 import torch
 import fitz
+import os
+
+
 from .ats_parser import extract_resume_details
 from .utils import generate_ats_score
 from .response import get_response
-
 
 # Load the model and tokenizer globally to avoid reloading them for every request
 model_name = "sentence-transformers/all-MiniLM-L6-v2"
@@ -62,7 +64,6 @@ def process_resume(request):
                 'structured_data': st_data,
                 'markdown_format': markdown_format
             }
-
             return JsonResponse(response_data, status=200)
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON'}, status=400)

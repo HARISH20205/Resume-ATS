@@ -1,9 +1,8 @@
 import re
-from .response import get_response  # Custom module to handle AI responses
-from pydantic import BaseModel, TypeAdapter  # Validation and data modeling
+from .response import get_response  
+from pydantic import BaseModel, TypeAdapter
 import json
 
-# Define a class to structure the extracted resume data
 class Section:
     name: str
     email: str
@@ -14,7 +13,6 @@ class Section:
     certifications: str
     areas_of_interest: str
 
-# Function to extract resume details and generate markdown
 def extract_resume_details(resume: str):
     """
     This function processes a given resume text to:
@@ -28,7 +26,6 @@ def extract_resume_details(resume: str):
         tuple: A tuple containing the markdown content and structured data in JSON format.
     """
 
-    # System instruction for AI response
     system_ins = """Analyze the provided resume and perform the following tasks:
 
 1. Extract the resume's content into a structured format under the following fields:
@@ -54,17 +51,13 @@ Return the output in the following JSON format:
 }
 """
 
-    # Combine the resume text with the system instructions for processing
     combined_output = get_response(prompt=resume, task=system_ins)
 
-    # Parse the combined output as JSON
     result = json.loads(combined_output)
 
-    # Extract the markdown content and structured data
     markdown = result.get("markdown", "")
     structured_data = result.get("structured_data")
 
-    # Clean up trailing whitespace in the markdown
     markdown = '\n'.join(line.rstrip() for line in markdown.splitlines())
 
     return markdown, structured_data

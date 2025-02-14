@@ -10,6 +10,12 @@ class EndPoint(models.Model):
     time = models.DateTimeField(auto_now_add=True)    
 
     def __str__(self):
-        return {"username":self.user_name,'user_id':self.user_id,'resume':self.resume,'job_description':self.job_description,'time':self.time}
+        return {
+            'username':self.user_name,
+            'user_id':self.user_id,
+            'resume':self.resume,
+            'job_description':self.job_description,
+            'time':self.time
+        }
 
     

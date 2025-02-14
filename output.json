@@ -1,0 +1,116 @@
+{
+    "user_id": 12345,
+    "user_name": "John Doe",
+    "similarity": 0.23571285605430603,
+    "ats_score": {
+        "ats_score": 70.5,
+        "detailed_scores": {
+            "skills_match": 80.0,
+            "experience_relevance": 65.0,
+            "education_relevance": 80,
+            "overall_formatting": 100
+        },
+        "feedback": {
+            "strengths": [
+                "Strong skills match",
+                "Strong education relevance",
+                "Strong overall formatting"
+            ],
+            "improvements": []
+        },
+        "detailed_feedback": {
+            "skills_match": {
+                "matching_elements": [
+                    "Python"
+                ],
+                "missing_elements": [
+                    "Django",
+                    "REST APIs"
+                ],
+                "explanation": "The candidate possesses Python skills, which is a core requirement. Django and REST APIs are missing but are crucial for the job. The other skills, while valuable in general software engineering, are not directly relevant to the specific requirements outlined in the job description, hence the score reflects the partial match."
+            },
+            "experience_relevance": {
+                "matching_elements": [
+                    "Developed a speech-to-text summarization system integrating Whisper for transcription and Pegasus for summarization",
+                    "Conducted in-depth research on advanced NLP models such as PEGASUS, BERTsum and BART",
+                    "Built a neural network for handwritten digit classification (MNIST) from scratch, implementing core machine learning concepts like gradient descent and one-hot encoding"
+                ],
+                "missing_elements": [
+                    "Experience with Python",
+                    "Experience with Django",
+                    "Experience with REST APIs",
+                    "Software Engineering specific projects"
+                ],
+                "explanation": "The work experience demonstrates a strong foundation in AI, NLP, and machine learning, which are relevant to software engineering. The intern developed a speech-to-text summarization system and built a neural network, showcasing practical skills. However, the description lacks explicit mention of Python, Django, or REST APIs, which are key requirements for the software engineer role. The experience is relevant but not a direct match for the specific technologies mentioned in the job description. The duration of the internship (Jun 2024 - Oct 2024) is a reasonable length, indicating a solid commitment to the role."
+            },
+            "education_relevance": {
+                "matching_elements": [
+                    "Strong GPA: 8.46"
+                ],
+                "missing_elements": [],
+                "explanation": "Education assessment completed"
+            },
+            "overall_formatting": {
+                "matching_elements": [
+                    "name",
+                    "email",
+                    "phone"
+                ],
+                "missing_elements": [],
+                "explanation": "Format assessment completed"
+            }
+        }
+    },
+    "structured_data": {
+        "name": "Harish KB",
+        "email": "harishkb20205@gmail.com",
+        "phone": "8248052926",
+        "skills": [
+            "Python",
+            "Java",
+            "C/C++",
+            "Supervised learning",
+            "unsupervised learning",
+            "NLP",
+            "LLMs",
+            "GitHub",
+            "Docker",
+            "Linux",
+            "AWS",
+            "Hugging Face",
+            "OpenCV",
+            "YOLO",
+            "FastAPI",
+            "Flask",
+            "MongoDB",
+            "Firebase"
+        ],
+        "experience": [
+            {
+                "title": "AI Research and Development Intern (Remote)",
+                "company": "eBramha Techworks Private Limited",
+                "dates": "Jun 2024 - Oct 2024",
+                "description": "- Developed a speech-to-text summarization system integrating Whisper for transcription and Pegasus for summarization, enhancing processing speed and efficiency while significantly reducing overall processing time and improving system performance.\n- Conducted in-depth research on advanced NLP models such as PEGASUS, BERTsum and BART, contributing to the development of effective solutions for tasks like summarization and language understanding.\n- Built a neural network for handwritten digit classification (MNIST) from scratch, implementing core machine learning concepts like gradient descent and one-hot encoding."
+            }
+        ],
+        "education": [
+            {
+                "institution": "Vellore Institute of Technology (VIT), Vellore, India",
+                "degree": "MTECH (Integrated) in Computer Science and Engineering",
+                "dates": "Aug 2022 - July 2027",
+                "gpa": "8.46"
+            }
+        ],
+        "certifications": [
+            "Coursera: Supervised Machine Learning: Regression and Classification",
+            "Coursera: Advanced Learning Algorithms",
+            "Coursera: Generative AI with Large Language Models"
+        ],
+        "areas_of_interest": [
+            "Machine Learning and AI",
+            "Full Stack Development",
+            "Cloud Computing and DevOps Practices"
+        ]
+    },
+    "markdown_format": "# Harish KB\n\n8248052926 | harishkb20205@gmail.com\n\n## Education\n\nVellore Institute of Technology (VIT), Vellore, India\nMTECH (Integrated) in Computer Science and Engineering (CGPA: 8.46)\nAug 2022 - July 2027\n\n## Experience\n\n**AI Research and Development Intern (Remote)**\neBramha Techworks Private Limited\nJun 2024 - Oct 2024\n\n*   Developed a speech-to-text summarization system integrating Whisper for transcription and Pegasus for summarization, enhancing processing speed and efficiency while significantly reducing overall processing time and improving system performance.\n*   Conducted in-depth research on advanced NLP models such as PEGASUS, BERTsum and BART, contributing to the development of effective solutions for tasks like summarization and language understanding.\n*   Built a neural network for handwritten digit classification (MNIST) from scratch, implementing core machine learning concepts like gradient descent and one-hot encoding.\n\n## Projects\n\n**VerbiSense: Interactive Document Retrieval System**\nLink\n\n*   Built the VerbiSense backend with FastAPI, optimizing document uploads, query processing, and API performance for real-time interactions with the React frontend.\n*   Integrated Retrieval-Augmented Generation (RAG) for improved document retrieval and response generation.\n*   Applied PyTorch models for advanced NLP tasks like semantic understanding and context-based querying.\n\n**Speech-to-Text Summarization**\n\n*   Developed a Python script that improved audio transcription accuracy by 30% and reduced post-processing time by 35%.\n*   Designed and implemented the frontend interface to provide a seamless, user-friendly experience for individuals interacting with the speech-to-text summarization system.\n\n## Technical Skills\n\n**Languages**: Python, Java, C/C++\n**Machine Learning**: Supervised learning, unsupervised learning, NLP, LLMs\n**Tools**: GitHub, Docker, Linux, AWS, Hugging Face\n**Computer Vision**: OpenCV, YOLO\n**Backend**: FastAPI, Flask, MongoDB, Firebase\n\n## Areas of Interest\n\n*   Machine Learning and AI\n*   Full Stack Development\n*   Cloud Computing and DevOps Practices\n\n## Certifications\n\n*   Coursera: Supervised Machine Learning: Regression and Classification\n*   Coursera: Advanced Learning Algorithms\n*   Coursera: Generative AI with Large Language Models."
+}
