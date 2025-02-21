@@ -37,8 +37,20 @@ def extract_resume_details(resume: str):
     "experience": None,
     "education": None,
     "certifications": None,
-    "areas_of_interest": None
+    "areas_of_interest": None,
+    "projects": None,
+    "languages": None,
+    "awards_and_achievements": None,
+    "volunteer_experience": None,
+    "hobbies_and_interests": None,
+    "publications": None,
+    "conferences_and_presentations": None,
+    "patents": None,
+    "professional_affiliations": None,
+    "portfolio_links": None,
+    "summary_or_objective": None
 }
+
 - Provide this output in JSON format under the key "structured_data".
 - If a field is missing or cannot be determined, set its value to None.
 
