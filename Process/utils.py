@@ -8,7 +8,7 @@ Provide responses in this exact JSON format:
     "score": <number 0-10>,
     "matching_elements": [<list of matching items>],
     "missing_elements": [<list of recommended items>],
-    "explanation": "<detailed explanation>"
+    "explanation": "<explanation in 10-15>"
 }
 Ensure the score is always a number between 0-10.
 """
@@ -16,11 +16,12 @@ Ensure the score is always a number between 0-10.
 class ATSResumeParser:
     def __init__(self):
         self.score_weights = {
-            'skills_match': 25,
-            'experience_relevance': 30,
-            'education_relevance': 20,
+            'skills_match': 30,
+            'experience_relevance': 25,
+            'education_relevance': 10,
             'overall_formatting': 15,
-            'keyword_optimization': 10
+            'keyword_optimization': 10,
+            'extra_sections': 10
         }
 
     def _parse_gemini_response(self, response_text: str) -> Dict:
@@ -141,6 +142,41 @@ class ATSResumeParser:
             'explanation': 'Format assessment completed'
         }
 
+    def _score_extra(self, structured_data: Dict) -> Dict:
+        score = 0
+        matching = []
+        missing = []
+        
+        extra_sections = {
+            "awards_and_achievements": 15,
+            "volunteer_experience": 10,
+            "hobbies_and_interests": 5,
+            "publications": 15,
+            "conferences_and_presentations": 10,
+            "patents": 15,
+            "professional_affiliations": 10,
+            "portfolio_links": 10,
+            "summary_or_objective": 10
+        }
+        
+        # Calculate base score for having sections
+        for section, weight in extra_sections.items():
+            if structured_data.get(section):
+                score += weight
+                matching.append(section.replace('_', ' ').title())
+            else:
+                missing.append(section.replace('_', ' ').title())
+        
+        # Normalize score to 100
+        normalized_score = (score / sum(extra_sections.values())) * 100
+        
+        return {
+            'score': normalized_score,
+            'matching': matching,
+            'missing': missing,
+            'explanation': 'Additional sections assessment completed'
+        }
+
     def parse_and_score(self, structured_data: Dict, job_description: Optional[str] = None) -> Dict:
         scores = {}
         feedback = {'strengths': [], 'improvements': []}
@@ -151,6 +187,7 @@ class ATSResumeParser:
             'experience_relevance': self._score_experience(structured_data.get('experience', []), job_description),
             'education_relevance': self._score_education(structured_data.get('education', [])),
             'overall_formatting': self._score_formatting(structured_data),
+            'extra_sections': self._score_extra(structured_data)  # Added extra sections scoring
         }
         
         total_score = 0

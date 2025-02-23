@@ -4,10 +4,12 @@ import json
 from transformers import AutoTokenizer, AutoModel
 import torch
 import fitz
+import os
+
+
 from .ats_parser import extract_resume_details
 from .utils import generate_ats_score
 from .response import get_response
-
 
 # Load the model and tokenizer globally to avoid reloading them for every request
 model_name = "sentence-transformers/all-MiniLM-L6-v2"
@@ -48,21 +50,21 @@ def process_resume(request):
             user_id = data.get('user_id')
             resume = data.get('resume')
             job_description = data.get('job_description')
-            # print(user_name,user_id,resume,job_description)
+            print(user_name,user_id,resume,job_description)
 
             similarity = calculate_similarity(job_description, resume)
-            markdown_format,st_data = extract_resume_details(resume)
+            print("sim-completed")
+            st_data = extract_resume_details(resume)
+            print("mark,struc-completed")
             ats_score = generate_ats_score(st_data,job_description)
-
+            print("ats-completed")
             response_data = {
                 'user_id': user_id,
                 'user_name': user_name,
                 'similarity': similarity,
                 'ats_score':ats_score,
-                'structured_data': st_data,
-                'markdown_format': markdown_format
+                'structured_data': st_data
             }
-
             return JsonResponse(response_data, status=200)
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
