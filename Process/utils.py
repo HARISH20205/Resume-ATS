@@ -74,7 +74,7 @@ class ATSResumeParser:
         for exp in experience:
             if all(key in exp for key in ['title', 'company', 'description']):
                 base_score += 10
-            if any(keyword in exp.get('description', '').lower() for keyword in 
+            if any(keyword in exp.get('description', '') for keyword in 
                   ['increased', 'decreased', 'improved', '%', 'reduced']):
                 base_score += 5
                 
