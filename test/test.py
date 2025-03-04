@@ -6,7 +6,7 @@ import requests
 image_path = "https://firebasestorage.googleapis.com/v0/b/verbisense.appspot.com/o/uploads%2FicFk6CDLPCPwaV8mOyShdLeyB7f2%2FScreenshot%20from%202025-02-28%2019-04-26.png?alt=media&token=a44426b4-727c-41f6-ab09-ed938db89ae7"
 image = requests.get(image_path)
 
-client = genai.Client(api_key="AIzaSyCO3W5Nha1sY9u5glJHODRTRAywxRb3egQ")
+client = genai.Client(api_key="")
 response = client.models.generate_content(
     model="gemini-2.0-flash-exp",
     contents=["extract the text and give in json format",
