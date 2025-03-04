@@ -44,6 +44,7 @@ def extract_resume_details(resume: str):
     "structured_data":{
         "name": None,
         "email": None,
+        "github": None,
         "phone": None,
         "skills": None,
         "experience": None,
