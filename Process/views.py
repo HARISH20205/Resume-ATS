@@ -11,11 +11,9 @@ from .utils import generate_ats_score
 from .response import get_response
 from .extract import extract_text_from_pdf
 
-# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Load the model and tokenizer globally to avoid reloading them for every request
 model_name = "sentence-transformers/all-MiniLM-L6-v2"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModel.from_pretrained(model_name)
@@ -68,10 +66,8 @@ def process_resume(request):
         except json.JSONDecodeError:
             logger.error("Invalid JSON received")
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
-    elif request.method == 'GET':
-        return JsonResponse({'message': 'yaay working '}, status=200)
     else:
-        return JsonResponse({'error': 'Only POST and GET requests are allowed'}, status=405)
+        return JsonResponse({'message': 'Only POST requests are allowed'}, status=405)
 
 def verify_api(request):
     if request.method == 'GET':
