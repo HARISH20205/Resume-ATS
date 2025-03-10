@@ -1,0 +1,49 @@
+# Virtual environments
+myenv/
+venv/
+env/
+
+# Data directories
+Data/
+data/
+
+# Test directories
+test/
+tests/
+
+# IDE settings
+.vscode/
+.idea/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.coverage
+htmlcov/
+
+# Logs
+*.log
+logs/
+
+# Local configuration
+.env.local
+.env.development
+.env.test
+
+# Temporary files
+tmp/
+temp/
+
+# Git related
+.git/
+.gitignore
+
+# Docker related
+.docker/
+
+# System files
+.DS_Store
+Thumbs.db

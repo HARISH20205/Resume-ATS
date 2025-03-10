@@ -1,0 +1,35 @@
+# Core dependencies
+Django==5.1.5
+djangorestframework==3.15.2
+python-dotenv==1.0.1
+numpy==2.2.2
+pandas==2.2.3
+scikit-learn==1.6.1
+pillow==11.0.0
+tqdm==4.67.1
+requests==2.32.3
+
+# PDF processing
+pdfplumber==0.11.5
+pdf2docx==0.5.8
+PyMuPDF==1.25.2
+pytesseract==0.3.13
+python-docx==1.1.2
+pdfminer.six==20231228
+
+# NLP & AI
+google-generativeai==0.8.4
+transformers==4.48.2
+nltk==3.9.1
+
+# Image Processing
+opencv-python-headless==4.11.0.86
+
+# File handling and data formats
+pyarrow==19.0.1
+fsspec==2024.12.0
+filelock==3.17.0
+
+# Utilities
+regex==2024.11.6
+markdown2==2.5.3

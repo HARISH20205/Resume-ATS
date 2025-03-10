@@ -3,13 +3,13 @@ from google.genai import types
 
 import requests
 
-image_path = "https://firebasestorage.googleapis.com/v0/b/verbisense.appspot.com/o/uploads%2FicFk6CDLPCPwaV8mOyShdLeyB7f2%2FResume-1.pdf?alt=media&token=3a0f8b9d-ece3-4bda-b25c-a55cc16bede2"
+image_path = "https://firebasestorage.googleapis.com/v0/b/verbisense.appspot.com/o/uploads%2FicFk6CDLPCPwaV8mOyShdLeyB7f2%2Fberserk3.jpg?alt=media&token=a8ea8514-b9ef-4033-8ce6-8151f4a92db8"
 image = requests.get(image_path)
 
 client = genai.Client(api_key="AIzaSyClYvVaQYvV9SjxRttOiPo2sTda2drVOg8")
 response = client.models.generate_content(
     model="gemini-2.0-flash-exp",
-    contents=["extract the text and give in json format",
+    contents=["extract the text or tell me whats it about  and give in json format",
               types.Part.from_bytes(data=image.content, mime_type="image/jpeg")])
 
 print(response.text)
