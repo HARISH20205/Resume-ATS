@@ -10,8 +10,9 @@ dist/
 
 # Ignore sensitive files
 
-.env
+**/.env
+
 secrets.json
 
-**pycache**/
-migrations
+__pycache__/
+migrations/
