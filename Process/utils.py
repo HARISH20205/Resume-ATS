@@ -1,8 +1,11 @@
 import json
 import concurrent.futures
-from functools import lru_cache
+import logging
 from typing import Dict, List, Optional, Union
 from .response import get_response
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 SYSTEM_INSTRUCTION = """
 Provide responses in this exact JSON format:
@@ -10,7 +13,7 @@ Provide responses in this exact JSON format:
     "score": <number 0-10>,
     "matching_elements": [<list of matching items>],
     "missing_elements": [<list of recommended items>],
-    "explanation": "<explanation in 10-15>"
+    "explanation": "<explanation in 10-15 words>"
 }
 Ensure the score is always a number between 0-10.
 """
@@ -27,9 +30,7 @@ class ATSResumeParser:
         }
         self.total_weight = sum(self.score_weights.values())
 
-    @staticmethod
-    @lru_cache(maxsize=128)  
-    def _parse_gemini_response(response_text: str) -> Dict:
+    def _parse_gemini_response(self, response_text: str) -> Dict:
         """Parse the response from Gemini API with caching for better performance"""
         try:
             response = json.loads(response_text)
@@ -43,6 +44,7 @@ class ATSResumeParser:
             return {'score': 5.0, 'matching': [], 'missing': [], 'explanation': ''}
 
     def _score_skills(self, skills: List[str], job_description: Optional[str]) -> Dict:
+        print("skills:",skills)
         """Score skills with optimized processing"""
         if not skills:
             return {'score': 0, 'matching': [], 'missing': [], 'explanation': 'No skills provided'}
@@ -63,9 +65,9 @@ class ATSResumeParser:
         response = self._parse_gemini_response(
             get_response(prompt, SYSTEM_INSTRUCTION)
         )
-        
+        print("complted skills:",response)
         return {
-            'score': (base_score + (response['score'] * 10)) >> 1,
+            'score': (base_score + (response['score'] * 10)) / 2,
             'matching': response['matching'],
             'missing': response['missing'],
             'explanation': response['explanation']
@@ -73,6 +75,7 @@ class ATSResumeParser:
 
     def _score_experience(self, experience: List[Dict], job_description: Optional[str]) -> Dict:
         """Score experience with optimized processing"""
+        print("experience:",experience)
         if not experience:
             return {'score': 0, 'matching': [], 'missing': [], 'explanation': 'No experience provided'}
             
@@ -100,9 +103,9 @@ class ATSResumeParser:
         response = self._parse_gemini_response(
             get_response(prompt, SYSTEM_INSTRUCTION)
         )
-        
+        print("completed experience:",response)
         return {
-            'score': (base_score + (response['score'] * 10)) >> 1,
+            'score': (base_score + (response['score'] * 10)) / 2,
             'matching': response['matching'],
             'missing': response['missing'],
             'explanation': response['explanation']
@@ -244,6 +247,7 @@ class ATSResumeParser:
 def generate_ats_score(structured_data: Union[Dict, str], job_des_text: Optional[str] = None) -> Dict:
     """Generate ATS score with optimized processing"""
     try:
+        print("check",structured_data)
         if not structured_data:
             return {"error": "No resume data provided"}
             

@@ -3,10 +3,10 @@ from google.genai import types
 
 import requests
 
-image_path = "https://firebasestorage.googleapis.com/v0/b/verbisense.appspot.com/o/uploads%2FicFk6CDLPCPwaV8mOyShdLeyB7f2%2FScreenshot%20from%202025-02-28%2019-04-26.png?alt=media&token=a44426b4-727c-41f6-ab09-ed938db89ae7"
+image_path = "https://firebasestorage.googleapis.com/v0/b/verbisense.appspot.com/o/uploads%2FicFk6CDLPCPwaV8mOyShdLeyB7f2%2FResume-1.pdf?alt=media&token=3a0f8b9d-ece3-4bda-b25c-a55cc16bede2"
 image = requests.get(image_path)
 
-client = genai.Client(api_key="")
+client = genai.Client(api_key="AIzaSyClYvVaQYvV9SjxRttOiPo2sTda2drVOg8")
 response = client.models.generate_content(
     model="gemini-2.0-flash-exp",
     contents=["extract the text and give in json format",

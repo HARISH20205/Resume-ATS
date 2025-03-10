@@ -24,6 +24,7 @@ def deep_get(dictionary, keys, default=None):
 
 
 def extract_resume_details(resume: str):
+    print("Innnnnnnnnnnnnnnnnnnnnnnnnnnn")
     """
     This function processes a given resume text to:
     1. Extract structured data into predefined fields.
@@ -70,7 +71,10 @@ def extract_resume_details(resume: str):
 """
     try:
         combined_output = get_response(prompt=resume, task=system_ins)
+        print("Before parsing st dataa to JSON",combined_output)
+        
         result = json.loads(combined_output)
+        print("after st data json",combined_output)
 
         structured_data = result["structured_data"]
         print(structured_data)

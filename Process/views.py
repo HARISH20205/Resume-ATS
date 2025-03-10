@@ -40,11 +40,10 @@ def process_resume(request):
         try:
             data = json.loads(request.body)
 
-            user_name = data.get('user_name')
             user_id = data.get('user_id')
             resume = data.get('resume')
             job_description = data.get('job_description')
-            logger.info(f"Received data for user: {user_name}, user_id: {user_id}")
+            logger.info(f"Received data for user_id: {user_id}")
 
             similarity = calculate_similarity(job_description, resume)
             logger.info("Similarity calculation completed")
@@ -57,7 +56,6 @@ def process_resume(request):
 
             response_data = {
                 'user_id': user_id,
-                'user_name': user_name,
                 'similarity': similarity,
                 'ats_score': ats_score,
                 'structured_data': st_data

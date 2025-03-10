@@ -15,14 +15,13 @@ def process_change(request):
             # Parse JSON only once
             data = json.loads(request.body)
 
-            user_name = data.get('user_name')
             user_id = data.get('user_id')
             prompt = data.get("prompt")
             content = data.get('content')
             section = data.get("section")
             job_description = data.get('job_description')
             
-            if not all([user_name, user_id, prompt, content]):
+            if not all([user_id, prompt, content]):
                 return JsonResponse({'error': 'Missing required fields'}, status=400)
             
             # Customize processing approach based on section
@@ -43,7 +42,6 @@ def process_change(request):
             
             return JsonResponse({
                 'user_id': user_id,
-                'user_name': user_name,
                 'modified_content': modified_content
             }, status=200)
             
