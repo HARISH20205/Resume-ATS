@@ -4,7 +4,7 @@ myenv/
 
 # Ignore build directories
 
-**pycache**/
+__pycache__/
 build/
 dist/
 
@@ -12,7 +12,8 @@ dist/
 
 **/.env
 
+**/.parquet
+
 secrets.json
 
-__pycache__/
 migrations/
