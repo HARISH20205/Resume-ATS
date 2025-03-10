@@ -12,3 +12,5 @@ dist/
 
 .env
 secrets.json
+
+**pycache**
