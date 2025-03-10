@@ -17,3 +17,4 @@ dist/
 secrets.json
 
 migrations/
+Data/
