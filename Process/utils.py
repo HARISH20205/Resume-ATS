@@ -1,8 +1,12 @@
 import json
 import concurrent.futures
-from functools import lru_cache
+import logging
+import traceback
 from typing import Dict, List, Optional, Union
 from .response import get_response
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 SYSTEM_INSTRUCTION = """
 Provide responses in this exact JSON format:
@@ -10,13 +14,14 @@ Provide responses in this exact JSON format:
     "score": <number 0-10>,
     "matching_elements": [<list of matching items>],
     "missing_elements": [<list of recommended items>],
-    "explanation": "<explanation in 10-15>"
+    "explanation": "<explanation in 10-15 words>"
 }
 Ensure the score is always a number between 0-10.
 """
 
 class ATSResumeParser:
     def __init__(self):
+        logger.info("Initializing ATSResumeParser")
         self.score_weights = {
             'skills_match': 30,
             'experience_relevance': 25,
@@ -26,20 +31,28 @@ class ATSResumeParser:
             'extra_sections': 10
         }
         self.total_weight = sum(self.score_weights.values())
+        logger.debug(f"Score weights configured with total weight: {self.total_weight}")
 
-    @staticmethod
-    @lru_cache(maxsize=128)  
-    def _parse_gemini_response(response_text: str) -> Dict:
+    def _parse_gemini_response(self, response_text: str) -> Dict:
         """Parse the response from Gemini API with caching for better performance"""
         try:
+            logger.debug("Parsing Gemini API response")
             response = json.loads(response_text)
-            return {
+            result = {
                 'score': float(response['score']),
                 'matching': response.get('matching_elements', []),
                 'missing': response.get('missing_elements', []),
                 'explanation': response.get('explanation', '')
             }
-        except (json.JSONDecodeError, KeyError, ValueError):
+            logger.debug(f"Successfully parsed response with score: {result['score']}")
+            return result
+        except (json.JSONDecodeError, KeyError, ValueError) as e:
+            logger.error(f"Error parsing Gemini response: {e}")
+            logger.debug(f"Failed response content: {response_text}")
+            return {'score': 5.0, 'matching': [], 'missing': [], 'explanation': ''}
+        except Exception as e:
+            logger.error(f"Unexpected error parsing Gemini response: {e}")
+            logger.debug(traceback.format_exc())
             return {'score': 5.0, 'matching': [], 'missing': [], 'explanation': ''}
 
     def _score_skills(self, skills: List[str], job_description: Optional[str]) -> Dict:
@@ -63,9 +76,8 @@ class ATSResumeParser:
         response = self._parse_gemini_response(
             get_response(prompt, SYSTEM_INSTRUCTION)
         )
-        
         return {
-            'score': (base_score + (response['score'] * 10)) >> 1,
+            'score': (base_score + (response['score'] * 10)) / 2,
             'matching': response['matching'],
             'missing': response['missing'],
             'explanation': response['explanation']
@@ -100,9 +112,8 @@ class ATSResumeParser:
         response = self._parse_gemini_response(
             get_response(prompt, SYSTEM_INSTRUCTION)
         )
-        
         return {
-            'score': (base_score + (response['score'] * 10)) >> 1,
+            'score': (base_score + (response['score'] * 10)) / 2,
             'matching': response['matching'],
             'missing': response['missing'],
             'explanation': response['explanation']
@@ -244,6 +255,7 @@ class ATSResumeParser:
 def generate_ats_score(structured_data: Union[Dict, str], job_des_text: Optional[str] = None) -> Dict:
     """Generate ATS score with optimized processing"""
     try:
+        logger.info("Starting ATS score generation")
         if not structured_data:
             return {"error": "No resume data provided"}
             
@@ -256,6 +268,7 @@ def generate_ats_score(structured_data: Union[Dict, str], job_des_text: Optional
         parser = ATSResumeParser()
         result = parser.parse_and_score(structured_data, job_des_text)
         
+        logger.info("ATS score generation completed successfully")
         return {
             'ats_score': result['total_score'],
             'detailed_scores': result['detailed_scores'],
@@ -264,4 +277,7 @@ def generate_ats_score(structured_data: Union[Dict, str], job_des_text: Optional
         }
         
     except Exception as e:
-        return {"error": f"An error occurred: {str(e)}"}
+        error_msg = f"Error generating ATS score: {e}"
+        logger.error(error_msg)
+        logger.debug(traceback.format_exc())
+        return {"ats_score": 50.0, "detailed_scores": {}, "feedback": {"error": error_msg}}

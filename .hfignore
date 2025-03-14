@@ -1,0 +1,20 @@
+# Ignore Python virtual environment
+
+myenv/
+
+# Ignore build directories
+
+__pycache__/
+build/
+dist/
+
+# Ignore sensitive files
+
+**/.env
+
+**/.parquet
+
+secrets.json
+
+migrations/
+Data/
