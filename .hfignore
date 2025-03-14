@@ -4,11 +4,17 @@ myenv/
 
 # Ignore build directories
 
-**pycache**/
+__pycache__/
 build/
 dist/
 
 # Ignore sensitive files
 
-.env
+**/.env
+
+**/.parquet
+
 secrets.json
+
+migrations/
+Data/

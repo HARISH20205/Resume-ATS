@@ -26,6 +26,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
+
 # Copy only necessary application code
 COPY app.py /app/
 COPY Process/ /app/Process/
