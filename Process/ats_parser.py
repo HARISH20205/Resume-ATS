@@ -1,7 +1,12 @@
 import re
+import logging
 from .response import get_response  
 from pydantic import BaseModel, TypeAdapter
 import json
+import traceback
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 class Section:
     name: str
@@ -14,17 +19,21 @@ class Section:
     areas_of_interest: str
 
 def deep_get(dictionary, keys, default=None):
-    for key in keys:
-        if isinstance(dictionary, dict):
-            dictionary = dictionary.get(key, {})
-        else:
-            return default
-    return dictionary if dictionary != {} else default
-
-
+    logger.debug(f"Accessing deep keys {keys} in dictionary")
+    try:
+        for key in keys:
+            if isinstance(dictionary, dict):
+                dictionary = dictionary.get(key, {})
+            else:
+                logger.warning(f"Could not access key {key}, returning default value")
+                return default
+        return dictionary if dictionary != {} else default
+    except Exception as e:
+        logger.error(f"Error in deep_get function: {e}")
+        return default
 
 def extract_resume_details(resume: str):
-    print("Innnnnnnnnnnnnnnnnnnnnnnnnnnn")
+    logger.info("Starting resume details extraction")
     """
     This function processes a given resume text to:
     1. Extract structured data into predefined fields.
@@ -70,18 +79,30 @@ def extract_resume_details(resume: str):
 - If a field is missing or cannot be determined, set its value to None.
 """
     try:
+        logger.info("Sending resume to get_response function")
         combined_output = get_response(prompt=resume, task=system_ins)
-        print("Before parsing st dataa to JSON",combined_output)
+        logger.debug("Raw response received from get_response")
         
+        logger.info("Attempting to parse response to JSON")
         result = json.loads(combined_output)
-        print("after st data json",combined_output)
+        logger.debug("Successfully parsed response to JSON")
 
+        logger.info("Extracting structured data from result")
         structured_data = result["structured_data"]
-        print(structured_data)
+        logger.info("Resume structured data extraction completed successfully")
 
         return structured_data
-    except:
-        return {"structured_data":"Failed to Get Due to Improper Json Data"}
-# resume = "Harish KB 8248052926 # harishkb20205@gmail.com i Harish KB HARISH20205 Education Vellore Institute of Technology (VIT) Vellore, India MTECH (Integrated) in Computer Science and Engineering(CGPA: 8.46) Aug 2022 July 2027 Experience AI Research and Development Intern (Remote) Jun 2024 Oct 2024 eBramha Techworks Private Limited - Developed a speech-to-text summarization system integrating Whisper for transcription and Pegasus for summarization, enhancing processing speed and efficiency while significantly reducing overall processing time and improving system performance. - Conducted in-depth research on advanced NLP models such as PEGASUS, BERTsum and BART, contributing to the development of effective solutions for tasks like summarization and language understanding. - Built a neural network for handwritten digit classification (MNIST) from scratch, implementing core machine learning concepts like gradient descent and one-hot encoding. Projects VerbiSense: Interactive Document Retrieval System - Link - Built the VerbiSense backend with FastAPI, optimizing document uploads, query processing, and API performance for real-time interactions with the React frontend. - Integrated Retrieval-Augmented Generation (RAG) for improved document retrieval and response generation. - Applied PyTorch models for advanced NLP tasks like semantic understanding and context-based querying. Speech-to-Text Summarization - Developed a Python script that improved audio transcription accuracy by 30% and reduced post-processing time by 35%. - Designed and implemented the frontend interface to provide a seamless, user-friendly experience for individuals interacting with the speech-to-text summarization system. Technical Skills Languages: Python, Java, C/C++ Machine Learning: Supervised learning, unsupervised learning, NLP, LLMs Tools: GitHub, Docker, Linux, AWS, Hugging Face Computer Vision: OpenCV, YOLO Backend: FastAPI, Flask, MongoDB, Firebase Areas of Interest - Machine Learning and AI - Full Stack Development - Cloud Computing and DevOps Practices Certifications - Coursera: Supervised Machine Learning: Regression and Classification - Coursera: Advanced Learning Algorithms - Coursera: Generative AI with Large Language Models."
-
-# print(extract_resume_details(resume))
+    except json.JSONDecodeError as e:
+        error_msg = f"JSON parsing error: {e}"
+        logger.error(error_msg)
+        logger.debug(f"Failed JSON content: {combined_output}")
+        return {"structured_data_error": error_msg}
+    except KeyError as e:
+        error_msg = f"Missing key in response: {e}"
+        logger.error(error_msg)
+        return {"structured_data_error": error_msg}
+    except Exception as e:
+        error_msg = f"Unexpected error in extract_resume_details: {e}"
+        logger.error(error_msg)
+        logger.debug(traceback.format_exc())
+        return {"structured_data_error": error_msg}
