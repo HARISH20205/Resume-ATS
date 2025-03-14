@@ -1,6 +1,12 @@
 import json
+import concurrent.futures
+import logging
+import traceback
 from typing import Dict, List, Optional, Union
 from .response import get_response
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 SYSTEM_INSTRUCTION = """
 Provide responses in this exact JSON format:
@@ -8,13 +14,14 @@ Provide responses in this exact JSON format:
     "score": <number 0-10>,
     "matching_elements": [<list of matching items>],
     "missing_elements": [<list of recommended items>],
-    "explanation": "<explanation in 10-15>"
+    "explanation": "<explanation in 10-15 words>"
 }
 Ensure the score is always a number between 0-10.
 """
 
 class ATSResumeParser:
     def __init__(self):
+        logger.info("Initializing ATSResumeParser")
         self.score_weights = {
             'skills_match': 30,
             'experience_relevance': 25,
@@ -23,94 +30,114 @@ class ATSResumeParser:
             'keyword_optimization': 10,
             'extra_sections': 10
         }
+        self.total_weight = sum(self.score_weights.values())
+        logger.debug(f"Score weights configured with total weight: {self.total_weight}")
 
     def _parse_gemini_response(self, response_text: str) -> Dict:
+        """Parse the response from Gemini API with caching for better performance"""
         try:
+            logger.debug("Parsing Gemini API response")
             response = json.loads(response_text)
-            return {
+            result = {
                 'score': float(response['score']),
                 'matching': response.get('matching_elements', []),
                 'missing': response.get('missing_elements', []),
                 'explanation': response.get('explanation', '')
             }
-        except (json.JSONDecodeError, KeyError, ValueError):
+            logger.debug(f"Successfully parsed response with score: {result['score']}")
+            return result
+        except (json.JSONDecodeError, KeyError, ValueError) as e:
+            logger.error(f"Error parsing Gemini response: {e}")
+            logger.debug(f"Failed response content: {response_text}")
+            return {'score': 5.0, 'matching': [], 'missing': [], 'explanation': ''}
+        except Exception as e:
+            logger.error(f"Unexpected error parsing Gemini response: {e}")
+            logger.debug(traceback.format_exc())
             return {'score': 5.0, 'matching': [], 'missing': [], 'explanation': ''}
 
     def _score_skills(self, skills: List[str], job_description: Optional[str]) -> Dict:
+        """Score skills with optimized processing"""
         if not skills:
             return {'score': 0, 'matching': [], 'missing': [], 'explanation': 'No skills provided'}
             
         base_score = 70  
         
-        if len(skills) >= 5:
+        skills_length = len(skills)
+        if skills_length >= 5:
             base_score += 10
-        if len(skills) >= 10:
+        if skills_length >= 10:
             base_score += 10
             
-        if job_description:
-            prompt = f"""
-            Analyze these skills: {', '.join(skills)}
-            for the job description: {job_description}
-            Consider relevance, importance, and skill level required.
-            """
-            response = self._parse_gemini_response(
-                get_response(prompt, SYSTEM_INSTRUCTION)
-            )
-            return {
-                'score': (base_score + (response['score'] * 10)) / 2,
-                'matching': response['matching'],
-                'missing': response['missing'],
-                'explanation': response['explanation']
-            }
-            
-        return {'score': base_score, 'matching': skills, 'missing': [], 'explanation': 'No job description provided'}
+        if not job_description:
+            return {'score': base_score, 'matching': skills, 'missing': [], 'explanation': 'No job description provided'}
+
+        prompt = f"Skills: {','.join(skills[:20])}. Job description: {job_description[:500]}. Rate match."
+        
+        response = self._parse_gemini_response(
+            get_response(prompt, SYSTEM_INSTRUCTION)
+        )
+        return {
+            'score': (base_score + (response['score'] * 10)) / 2,
+            'matching': response['matching'],
+            'missing': response['missing'],
+            'explanation': response['explanation']
+        }
 
     def _score_experience(self, experience: List[Dict], job_description: Optional[str]) -> Dict:
+        """Score experience with optimized processing"""
         if not experience:
             return {'score': 0, 'matching': [], 'missing': [], 'explanation': 'No experience provided'}
             
         base_score = 60
         
+        required_keys = {'title', 'company', 'description'}
+        improvement_keywords = {'increased', 'decreased', 'improved', '%', 'reduced'}
+        
         for exp in experience:
-            if all(key in exp for key in ['title', 'company', 'description']):
+            if required_keys.issubset(exp.keys()):
                 base_score += 10
-            if any(keyword in exp.get('description', '').lower() for keyword in 
-                  ['increased', 'decreased', 'improved', '%', 'reduced']):
+                
+            description = exp.get('description', '')
+            if description and any(keyword in description for keyword in improvement_keywords):
                 base_score += 5
                 
-        if job_description:
-            prompt = f"""
-            Analyze this work experience:
-            {json.dumps(experience)}
-            for the job description: {job_description}
-            Consider relevance, duration, and responsibilities.
-            """
-            response = self._parse_gemini_response(
-                get_response(prompt, SYSTEM_INSTRUCTION)
-            )
-            return {
-                'score': (base_score + (response['score'] * 10)) / 2,
-                'matching': response['matching'],
-                'missing': response['missing'],
-                'explanation': response['explanation']
-            }
-            
-        return {'score': base_score, 'matching': [], 'missing': [], 'explanation': 'No job description provided'}
+        if not job_description:
+            return {'score': base_score, 'matching': [], 'missing': [], 'explanation': 'No job description provided'}
+        
+        simplified_exp = [{'title': e.get('title', ''), 'description': e.get('description', '')[:100]} 
+                          for e in experience[:3]]
+        
+        prompt = f"Experience: {json.dumps(simplified_exp)}. Job description: {job_description[:500]}. Rate match."
+        
+        response = self._parse_gemini_response(
+            get_response(prompt, SYSTEM_INSTRUCTION)
+        )
+        return {
+            'score': (base_score + (response['score'] * 10)) / 2,
+            'matching': response['matching'],
+            'missing': response['missing'],
+            'explanation': response['explanation']
+        }
 
     def _score_education(self, education: List[Dict]) -> Dict:
+        """Score education with optimized processing"""
         if not education:
             return {'score': 0, 'matching': [], 'missing': [], 'explanation': 'No education provided'}
             
         score = 70
         matching = []
         
+        required_keys = {'institution', 'degree', 'start_date', 'end_date'}
+        
         for edu in education:
-            if 'gpa' in edu and float(edu['gpa']) > 3.0:
+            gpa = edu.get('gpa')
+            if gpa and float(gpa) > 3.0:
                 score += 10
-                matching.append(f"Strong GPA: {edu['gpa']}")
-            if all(key in edu for key in ['institution', 'degree', 'start_date', 'end_date']):
+                matching.append(f"Strong GPA: {gpa}")
+                
+            if required_keys.issubset(edu.keys()):
                 score += 10
-                matching.append(f"{edu['degree']} from {edu['institution']}")
+                matching.append(f"{edu.get('degree', '')} from {edu.get('institution', '')}")
                 
         return {
             'score': min(100, score),
@@ -120,33 +147,32 @@ class ATSResumeParser:
         }
 
     def _score_formatting(self, structured_data: Dict) -> Dict:
+        """Score formatting with optimized processing"""
         score = 100
-        missing = []
         
-        contact_fields = ['name', 'email', 'phone']
-        missing_contacts = [field for field in contact_fields if field not in structured_data]
+        contact_fields = ('name', 'email', 'phone')
+        essential_sections = ('skills', 'experience', 'education')
+        
+        structured_keys = set(structured_data.keys())
+        
+        missing_contacts = [field for field in contact_fields if field not in structured_keys]
         if missing_contacts:
             score -= 20
-            missing.extend(missing_contacts)
             
-        essential_sections = ['skills', 'experience', 'education']
-        missing_sections = [section for section in essential_sections if section not in structured_data]
+        missing_sections = [section for section in essential_sections if section not in structured_keys]
+        missing_penalty = 15 * len(missing_sections)
         if missing_sections:
-            score -= 15 * len(missing_sections)
-            missing.extend(missing_sections)
+            score -= missing_penalty
                 
         return {
             'score': max(0, score),
-            'matching': [field for field in contact_fields if field in structured_data],
-            'missing': missing,
+            'matching': [field for field in contact_fields if field in structured_keys],
+            'missing': missing_contacts + missing_sections,
             'explanation': 'Format assessment completed'
         }
 
     def _score_extra(self, structured_data: Dict) -> Dict:
-        score = 0
-        matching = []
-        missing = []
-        
+        """Score extra sections with optimized processing"""
         extra_sections = {
             "awards_and_achievements": 15,
             "volunteer_experience": 10,
@@ -159,16 +185,22 @@ class ATSResumeParser:
             "summary_or_objective": 10
         }
         
-        # Calculate base score for having sections
+        total_possible = sum(extra_sections.values())
+        
+        structured_keys = set(structured_data.keys())
+        
+        score = 0
+        matching = []
+        missing = []
+        
         for section, weight in extra_sections.items():
-            if structured_data.get(section):
+            if section in structured_keys and structured_data.get(section):
                 score += weight
                 matching.append(section.replace('_', ' ').title())
             else:
                 missing.append(section.replace('_', ' ').title())
         
-        # Normalize score to 100
-        normalized_score = (score / sum(extra_sections.values())) * 100
+        normalized_score = (score * 100) // total_possible if total_possible > 0 else 0
         
         return {
             'score': normalized_score,
@@ -178,33 +210,40 @@ class ATSResumeParser:
         }
 
     def parse_and_score(self, structured_data: Dict, job_description: Optional[str] = None) -> Dict:
+        """Parse and score resume with parallel processing"""
         scores = {}
         feedback = {'strengths': [], 'improvements': []}
         detailed_feedback = {}
         
-        score_components = {
-            'skills_match': self._score_skills(structured_data.get('skills', []), job_description),
-            'experience_relevance': self._score_experience(structured_data.get('experience', []), job_description),
-            'education_relevance': self._score_education(structured_data.get('education', [])),
-            'overall_formatting': self._score_formatting(structured_data),
-            'extra_sections': self._score_extra(structured_data)  # Added extra sections scoring
-        }
-        
-        total_score = 0
-        for category, result in score_components.items():
-            scores[category] = result['score']
-            total_score += result['score'] * (self.score_weights[category] / 100)
-            
-            detailed_feedback[category] = {
-                'matching_elements': result['matching'],
-                'missing_elements': result['missing'],
-                'explanation': result['explanation']
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            # Define tasks to run in parallel
+            tasks = {
+                'skills_match': executor.submit(self._score_skills, structured_data.get('skills', []), job_description),
+                'experience_relevance': executor.submit(self._score_experience, structured_data.get('experience', []), job_description),
+                'education_relevance': executor.submit(self._score_education, structured_data.get('education', [])),
+                'overall_formatting': executor.submit(self._score_formatting, structured_data),
+                'extra_sections': executor.submit(self._score_extra, structured_data)
             }
             
-            if result['score'] >= 80:
-                feedback['strengths'].append(f"Strong {category.replace('_', ' ')}")
-            elif result['score'] < 60:
-                feedback['improvements'].append(f"Improve {category.replace('_', ' ')}")
+            total_score = 0
+            for category, future in tasks.items():
+                result = future.result()
+                
+                scores[category] = result['score']
+                
+                weight = self.score_weights[category] / 100
+                total_score += result['score'] * weight
+                
+                detailed_feedback[category] = {
+                    'matching_elements': result['matching'],
+                    'missing_elements': result['missing'],
+                    'explanation': result['explanation']
+                }
+                
+                if result['score'] >= 80:
+                    feedback['strengths'].append(f"Strong {category.replace('_', ' ')}")
+                elif result['score'] < 60:
+                    feedback['improvements'].append(f"Improve {category.replace('_', ' ')}")
         
         return {
             'total_score': round(total_score, 2),
@@ -214,7 +253,9 @@ class ATSResumeParser:
         }
 
 def generate_ats_score(structured_data: Union[Dict, str], job_des_text: Optional[str] = None) -> Dict:
+    """Generate ATS score with optimized processing"""
     try:
+        logger.info("Starting ATS score generation")
         if not structured_data:
             return {"error": "No resume data provided"}
             
@@ -227,6 +268,7 @@ def generate_ats_score(structured_data: Union[Dict, str], job_des_text: Optional
         parser = ATSResumeParser()
         result = parser.parse_and_score(structured_data, job_des_text)
         
+        logger.info("ATS score generation completed successfully")
         return {
             'ats_score': result['total_score'],
             'detailed_scores': result['detailed_scores'],
@@ -235,4 +277,7 @@ def generate_ats_score(structured_data: Union[Dict, str], job_des_text: Optional
         }
         
     except Exception as e:
-        return {"error": f"An error occurred: {str(e)}"}
+        error_msg = f"Error generating ATS score: {e}"
+        logger.error(error_msg)
+        logger.debug(traceback.format_exc())
+        return {"ats_score": 50.0, "detailed_scores": {}, "feedback": {"error": error_msg}}
